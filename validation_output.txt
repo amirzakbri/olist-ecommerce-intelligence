@@ -1,0 +1,89 @@
+SET
+      table_name      | expected_rows | actual_rows | variance | passed 
+----------------------+---------------+-------------+----------+--------
+ category_translation |            71 |          71 |        0 | t
+ customers            |         99441 |       99441 |        0 | t
+ geolocation          |       1000163 |     1000163 |        0 | t
+ order_items          |        112650 |      112650 |        0 | t
+ orders               |         99441 |       99441 |        0 | t
+ payments             |        103886 |      103886 |        0 | t
+ products             |         32951 |       32951 |        0 | t
+ reviews              |         99224 |       99224 |        0 | t
+ sellers              |          3095 |        3095 |        0 | t
+(9 rows)
+
+                key_test                 | duplicate_rows 
+-----------------------------------------+----------------
+ sellers.seller_id                       |              0
+ products.product_id                     |              0
+ orders.order_id                         |              0
+ customers.customer_id                   |              0
+ payments.(order_id, payment_sequential) |              0
+ reviews.(review_id, order_id)           |              0
+ order_items.(order_id, order_item_id)   |              0
+(7 rows)
+
+      relationship       | orphan_rows 
+-------------------------+-------------
+ order_items -> sellers  |           0
+ order_items -> products |           0
+ payments -> orders      |           0
+ order_items -> orders   |           0
+ reviews -> orders       |           0
+ orders -> customers     |           0
+(6 rows)
+
+ fact_rows | distinct_orders | multiplied_rows | delivered_revenue 
+-----------+-----------------+-----------------+-------------------
+     99441 |           99441 |               0 |       13221498.11
+(1 row)
+
+ orders | total_item_plus_freight | total_payment_value | net_variance | net_variance_pct | reconciled_orders | non_reconciled_orders 
+--------+-------------------------+---------------------+--------------+------------------+-------------------+-----------------------
+  99441 |             15843553.24 |         16008872.12 |    165318.88 |             1.04 |             98365 |                  1076
+(1 row)
+
+                quality_check                 | affected_rows 
+----------------------------------------------+---------------
+ products missing category                    |           610
+ orders missing approval timestamp            |           160
+ orders missing delivered timestamp           |          2965
+ delivered orders missing delivered timestamp |             8
+ review scores outside 1-5                    |             0
+ negative freight values                      |             0
+ reviews missing title                        |         87658
+ negative product prices                      |             0
+ reviews missing message                      |         58256
+(9 rows)
+
+             product_category_name             | affected_products 
+-----------------------------------------------+-------------------
+ portateis_cozinha_e_preparadores_de_alimentos |                10
+ pc_gamer                                      |                 3
+(2 rows)
+
+   first_purchase    |    last_purchase    |   first_delivery    |    last_delivery    
+---------------------+---------------------+---------------------+---------------------
+ 2016-09-04 21:15:19 | 2018-10-17 17:30:18 | 2016-10-11 13:46:32 | 2018-10-17 13:22:46
+(1 row)
+
+      reconciliation_type      | order_status | orders | item_plus_freight | payment_value | net_variance 
+-------------------------------+--------------+--------+-------------------+---------------+--------------
+ Amount mismatch               | delivered    |    299 |          50090.57 |      52922.71 |      2832.14
+ Amount mismatch               | shipped      |      2 |             72.71 |         79.62 |         6.91
+ Amount mismatch               | canceled     |      2 |            157.72 |        189.73 |        32.01
+ Exact reconciliation          | delivered    |  96178 |       15369539.72 |   15369539.06 |        -0.66
+ Exact reconciliation          | shipped      |   1104 |         177056.63 |     177056.61 |        -0.02
+ Exact reconciliation          | canceled     |    459 |         105728.00 |     105728.00 |         0.00
+ Exact reconciliation          | invoiced     |    312 |          68988.75 |      68988.76 |         0.01
+ Exact reconciliation          | processing   |    301 |          69394.11 |      69394.11 |         0.00
+ Exact reconciliation          | unavailable  |      6 |           2140.49 |       2140.49 |         0.00
+ Exact reconciliation          | approved     |      2 |            241.08 |        241.08 |         0.00
+ Item rows present, no payment | delivered    |      1 |            143.46 |          0.00 |      -143.46
+ Payment present, no item rows | unavailable  |    603 |              0.00 |     124339.02 |    124339.02
+ Payment present, no item rows | canceled     |    164 |              0.00 |      37337.87 |     37337.87
+ Payment present, no item rows | created      |      5 |              0.00 |        688.10 |       688.10
+ Payment present, no item rows | invoiced     |      2 |              0.00 |        149.23 |       149.23
+ Payment present, no item rows | shipped      |      1 |              0.00 |         77.73 |        77.73
+(16 rows)
+
